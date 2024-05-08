@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://c25hfbgat07wk"]
+
+[ext_resource type="Shader" path="res://ray_marcher.gdshader" id="1_j4olw"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_c2n7b"]
+render_priority = 0
+shader = ExtResource("1_j4olw")
+shader_parameter/MAX_STEPS = 100
+shader_parameter/MAX_DIST = 100.0
+shader_parameter/SURF_DIST = 0.01
+shader_parameter/SMOOTHNESS = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
+material = SubResource("ShaderMaterial_c2n7b")
+flip_faces = true
+size = Vector3(5, 5, 5)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_ivrmn")
