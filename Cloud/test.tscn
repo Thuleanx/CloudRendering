@@ -1,21 +1,37 @@
-[gd_scene load_steps=4 format=3 uid="uid://c25hfbgat07wk"]
+[gd_scene load_steps=7 format=3 uid="uid://c25hfbgat07wk"]
 
-[ext_resource type="Shader" path="res://ray_marcher.gdshader" id="1_j4olw"]
+[ext_resource type="Shader" path="res://cube_cloud.gdshader" id="1_0ck7e"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_c2n7b"]
 render_priority = 0
-shader = ExtResource("1_j4olw")
-shader_parameter/MAX_STEPS = 100
-shader_parameter/MAX_DIST = 100.0
-shader_parameter/SURF_DIST = 0.01
-shader_parameter/SMOOTHNESS = 0.1
+shader = ExtResource("1_0ck7e")
+shader_parameter/BOUND_SIZE = Vector3(-2.5, -2.5, -2.5)
+shader_parameter/BaseColor = Vector3(0, 0.5, 0.5)
+shader_parameter/LightAbsorption = 0.2
 
 [sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
 material = SubResource("ShaderMaterial_c2n7b")
 flip_faces = true
 size = Vector3(5, 5, 5)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yhxxs"]
+albedo_color = Color(0.0637368, 0.178372, 0.271505, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_25f5b"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_un46s"]
+
 [node name="Node3D" type="Node3D"]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="Cloud" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.94293, 2.66528, -0.475936)
 mesh = SubResource("BoxMesh_ivrmn")
+
+[node name="Plane" type="MeshInstance3D" parent="."]
+transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_yhxxs")
+mesh = SubResource("PlaneMesh_25f5b")
+
+[node name="Sphere" type="MeshInstance3D" parent="."]
+transform = Transform3D(8, 0, 0, 0, 8, 0, 0, 0, 8, 2.43766, 0, 0)
+mesh = SubResource("SphereMesh_un46s")

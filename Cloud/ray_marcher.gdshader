@@ -75,9 +75,14 @@ void vertex() {
 
 void fragment() {
 	// Called for every pixel the material is visible on.
+
+    // Probably should be in vertex shader
 	vec3 position_worldspace = ((INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz);
+
 	vec3 ray_origin = CAMERA_POSITION_WORLD;
 	vec3 ray_direction = normalize(position_worldspace - ray_origin);
+	
+	vec4 BOUND_CENTER = MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
 	
 	float ray_distance = ray_march(ray_origin, ray_direction);
 	
