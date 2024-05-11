@@ -5,14 +5,14 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_c2n7b"]
 render_priority = 0
 shader = ExtResource("1_0ck7e")
-shader_parameter/BOUND_SIZE = Vector3(-2.5, -2.5, -2.5)
+shader_parameter/BOUND_SIZE = Vector3(10, 10, 10)
 shader_parameter/BaseColor = Vector3(0, 0.5, 0.5)
 shader_parameter/LightAbsorption = 0.2
 
 [sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
 material = SubResource("ShaderMaterial_c2n7b")
 flip_faces = true
-size = Vector3(5, 5, 5)
+size = Vector3(10, 10, 10)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yhxxs"]
 albedo_color = Color(0.0637368, 0.178372, 0.271505, 1)
@@ -24,7 +24,7 @@ albedo_color = Color(0.0637368, 0.178372, 0.271505, 1)
 [node name="Node3D" type="Node3D"]
 
 [node name="Cloud" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.94293, 2.66528, -0.475936)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.55437, 1.96419, 7.03031)
 mesh = SubResource("BoxMesh_ivrmn")
 
 [node name="Plane" type="MeshInstance3D" parent="."]
@@ -33,5 +33,5 @@ material_override = SubResource("StandardMaterial3D_yhxxs")
 mesh = SubResource("PlaneMesh_25f5b")
 
 [node name="Sphere" type="MeshInstance3D" parent="."]
-transform = Transform3D(8, 0, 0, 0, 8, 0, 0, 0, 8, 2.43766, 0, 0)
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -1.02591, 0, 7.83668)
 mesh = SubResource("SphereMesh_un46s")
