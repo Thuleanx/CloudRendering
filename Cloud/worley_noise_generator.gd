@@ -10,15 +10,20 @@ const NUM_OCTAVES = 4;
 	set (value):
 		value = clamp(1, value, MAX_SIZE)
 		dimension = value
-		update_required = true
-		on_variable_update()
 
 @export var density: Array[int] = [1, 4, 8, 16]:
 	set (value):
 		density = value
+
+@export var regenerate_button: bool:
+	set(value):
 		on_variable_update()
 
 @export var progress = "Finished"
+		
+func _validate_property(property):
+	if property.name=="progress":
+		property.usage = PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_EDITOR
 
 func on_variable_update():
 	update_required = true
@@ -30,7 +35,6 @@ var thread: Thread
 var thread_data := {}
 
 var update_required = false;
-
 
 func _init():
 	connect("drawing_thread_finished", on_threads_finished)
@@ -128,7 +132,14 @@ func generate_noise_texture():
 								if distance_squared < closest_distance_squared:
 									closest_distance_squared = distance_squared
 					
-					data[i * dimension_size * NUM_OCTAVES + j * NUM_OCTAVES + octave] = round(255 * sqrt(closest_distance_squared) * sample_density)
+					var distance = sqrt(closest_distance_squared) * sample_density
+					distance = 1.0 - distance # makes it bright at the point and falls off at the edge
+						
+					# prevents overflowing a byte
+					if distance == 1.0:
+						distance = 0.9999999
+
+					data[i * dimension_size * NUM_OCTAVES + j * NUM_OCTAVES + octave] = floor(256 * distance)
 
 		progress=str("Gen:",k,"/",dataArray.size()," ", data.size())
 		dataArray[k] = Image.create_from_data(dimension_size, dimension_size, false, Image.FORMAT_RGBA8, data)
