@@ -84,7 +84,7 @@ func generate_noise_texture():
 			for j in range(sample_density):
 				for k in range(sample_density):
 					var index = get_index.call(i, j, k)
-					points[octave][index] = Vector3(i + randf(), j + randf(), k + randf()) / float(sample_density)
+					points[octave][index] = Vector3(i + random.randf(), j + random.randf(), k + random.randf()) / float(sample_density)
 		
 	progress = "Generate Points Finished"
 	var dataArray: Array[Image] = []; dataArray.resize(dimension_size)
@@ -133,7 +133,7 @@ func generate_noise_texture():
 									closest_distance_squared = distance_squared
 					
 					var distance = sqrt(closest_distance_squared) * sample_density
-					distance = 1.0 - distance # makes it bright at the point and falls off at the edge
+					distance = max(1.0 - distance, 0.0) # makes it bright at the point and falls off at the edge
 						
 					# prevents overflowing a byte
 					if distance == 1.0:

@@ -1,13 +1,21 @@
-[gd_scene load_steps=7 format=3 uid="uid://c25hfbgat07wk"]
+[gd_scene load_steps=10 format=3 uid="uid://c25hfbgat07wk"]
 
 [ext_resource type="Shader" path="res://cube_cloud.gdshader" id="1_0ck7e"]
+[ext_resource type="ImageTexture3D" uid="uid://dyt2la2wsriih" path="res://WorleyNoise.tres" id="2_bvl1u"]
+[ext_resource type="Script" path="res://light_supplier.gd" id="3_8r6c0"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_c2n7b"]
 render_priority = 0
 shader = ExtResource("1_0ck7e")
 shader_parameter/BOUND_SIZE = Vector3(10, 10, 10)
-shader_parameter/BaseColor = Vector3(0, 0.5, 0.5)
-shader_parameter/LightAbsorption = 0.2
+shader_parameter/VolumeColor = Vector3(1, 1, 1)
+shader_parameter/AmbientColor = Vector3(0.1, 0.1, 0.1)
+shader_parameter/AmbientAbsorption = 1.0
+shader_parameter/LightColor = Vector3(2, 4, 4)
+shader_parameter/LightAbsorption = 3.0
+shader_parameter/LightAttenuation = Vector3(1, 1, 0.8)
+shader_parameter/LightPosition = Vector3(9.85648, 5.57928, 2.76376)
+shader_parameter/NOISE_TEXTURE = ExtResource("2_bvl1u")
 
 [sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
 material = SubResource("ShaderMaterial_c2n7b")
@@ -21,10 +29,14 @@ albedo_color = Color(0.0637368, 0.178372, 0.271505, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_un46s"]
 
-[node name="Node3D" type="Node3D"]
+[sub_resource type="Environment" id="Environment_pumh3"]
+glow_enabled = true
+glow_bloom = 0.47
+
+[node name="Root" type="Node3D"]
 
 [node name="Cloud" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.55437, 1.96419, 7.03031)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.10971, 7.24962, -2.64017)
 mesh = SubResource("BoxMesh_ivrmn")
 
 [node name="Plane" type="MeshInstance3D" parent="."]
@@ -35,3 +47,12 @@ mesh = SubResource("PlaneMesh_25f5b")
 [node name="Sphere" type="MeshInstance3D" parent="."]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -1.02591, 0, 7.83668)
 mesh = SubResource("SphereMesh_un46s")
+
+[node name="Light" type="Node3D" parent="." node_paths=PackedStringArray("cloud")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.85648, 5.57928, 2.76376)
+script = ExtResource("3_8r6c0")
+cloud = NodePath("../Cloud")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.711135, 0.175781, -0.680726, 0.0934724, 0.983283, 0.156261, 0.696814, 0.0474938, -0.715677, -12.7162, 7.40118, -9.89177)
+environment = SubResource("Environment_pumh3")
