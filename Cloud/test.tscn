@@ -7,20 +7,22 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_c2n7b"]
 render_priority = 0
 shader = ExtResource("1_0ck7e")
-shader_parameter/BOUND_SIZE = Vector3(10, 10, 10)
-shader_parameter/VolumeColor = Vector3(1, 1, 1)
-shader_parameter/AmbientColor = Vector3(0.1, 0.1, 0.1)
-shader_parameter/AmbientAbsorption = 1.0
-shader_parameter/LightColor = Vector3(2, 4, 4)
-shader_parameter/LightAbsorption = 3.0
-shader_parameter/LightAttenuation = Vector3(1, 1, 0.8)
-shader_parameter/LightPosition = Vector3(9.85648, 5.57928, 2.76376)
+shader_parameter/BOUND_SIZE = Vector3(20, 5, 20)
+shader_parameter/NoiseScale = 40.0
+shader_parameter/LightingAsymmetry = 0.344
+shader_parameter/VolumeColor = Color(1, 1, 1, 1)
+shader_parameter/AmbientColor = Color(0.25, 0.25, 0.25, 1)
+shader_parameter/AmbientAbsorption = 2.0
+shader_parameter/LightColor = Color(2.162, 0.075, 0, 1)
+shader_parameter/LightAbsorption = 0.2
+shader_parameter/LightAttenuation = Vector3(1, 0.2, 0.2)
+shader_parameter/LightPosition = Vector3(4.68008, 2.57666, -8.11161)
 shader_parameter/NOISE_TEXTURE = ExtResource("2_bvl1u")
 
 [sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
 material = SubResource("ShaderMaterial_c2n7b")
 flip_faces = true
-size = Vector3(10, 10, 10)
+size = Vector3(20, 5, 20)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yhxxs"]
 albedo_color = Color(0.0637368, 0.178372, 0.271505, 1)
@@ -36,7 +38,7 @@ glow_bloom = 0.47
 [node name="Root" type="Node3D"]
 
 [node name="Cloud" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.10971, 7.24962, -2.64017)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.96794, 7.17617, -2.68711)
 mesh = SubResource("BoxMesh_ivrmn")
 
 [node name="Plane" type="MeshInstance3D" parent="."]
@@ -49,7 +51,7 @@ transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -1.02591, 0, 7.83668)
 mesh = SubResource("SphereMesh_un46s")
 
 [node name="Light" type="Node3D" parent="." node_paths=PackedStringArray("cloud")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.85648, 5.57928, 2.76376)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.68008, 2.57666, -8.11161)
 script = ExtResource("3_8r6c0")
 cloud = NodePath("../Cloud")
 

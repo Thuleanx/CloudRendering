@@ -84,7 +84,7 @@ func generate_noise_texture():
 			for j in range(sample_density):
 				for k in range(sample_density):
 					var index = get_index.call(i, j, k)
-					points[octave][index] = Vector3(i + random.randf(), j + random.randf(), k + random.randf()) / float(sample_density)
+					points[octave][index] = Vector3(i + random.randf(), j + random.randf(), k + random.randf()) / sample_density
 		
 	progress = "Generate Points Finished"
 	var dataArray: Array[Image] = []; dataArray.resize(dimension_size)
@@ -96,9 +96,9 @@ func generate_noise_texture():
 			for j in range(dimension_size):
 				for octave in range(NUM_OCTAVES):
 					var sample_density = thread_data.density[octave]
-					var position = Vector3(i,j,k) / dimension_size
+					var position = Vector3(i,j,k) / float(dimension_size)
 
-					var sample_coord : Vector3i = Vector3i(position * sample_density)
+					var sample_coord : Vector3i = Vector3i(round(position * sample_density))
 
 					var bound_index = func(x:int):
 						if x < 0:
@@ -134,12 +134,14 @@ func generate_noise_texture():
 					
 					var distance = sqrt(closest_distance_squared) * sample_density
 					distance = max(1.0 - distance, 0.0) # makes it bright at the point and falls off at the edge
-						
-					# prevents overflowing a byte
-					if distance == 1.0:
-						distance = 0.9999999
+					
+					var stored_distance = floor(256 * distance);
+					# There's a very low chance we get exactly 1 -> this will overflow our byte
+					
+					if stored_distance == 256.0:
+						distance = 255.0
 
-					data[i * dimension_size * NUM_OCTAVES + j * NUM_OCTAVES + octave] = floor(256 * distance)
+					data[i * dimension_size * NUM_OCTAVES + j * NUM_OCTAVES + octave] = stored_distance;
 
 		progress=str("Gen:",k,"/",dataArray.size()," ", data.size())
 		dataArray[k] = Image.create_from_data(dimension_size, dimension_size, false, Image.FORMAT_RGBA8, data)
