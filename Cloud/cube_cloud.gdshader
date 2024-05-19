@@ -24,8 +24,13 @@ varying vec3 world_position;
 const int NUM_SAMPLES = 20;
 const int NUM_LIGHT_SAMPLES = 5;
 
-// Beer's Law
-float get_absorption(float density, float absorption_coef) { return exp(-density * absorption_coef); }
+float get_absorption(float density, float absorption_coef) { 
+    // Beer's Law
+    float beer = exp(-density * absorption_coef); 
+    float powder_sugar = 1.0 - exp(-density * density * absorption_coef * absorption_coef);
+	
+	return beer;
+}
 
 // Henyey-Greenstein anisotropic scattering
 float get_phase_function(float cosTheta) {
@@ -108,7 +113,7 @@ float get_light_absorption(vec3 position, vec3 bound_center, vec3 eye_direction)
     float cosLightTheta = -dot(ray_direction, eye_direction);
     float phase_function = get_phase_function(cosLightTheta);
 
-	return get_absorption(total_density, LightAbsorption) * falloff * phase_function;
+	return get_absorption(total_density, LightAbsorption) * phase_function;
 }
 
 void vertex() {

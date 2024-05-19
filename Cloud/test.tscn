@@ -11,12 +11,12 @@ shader_parameter/BOUND_SIZE = Vector3(20, 5, 20)
 shader_parameter/NoiseScale = 40.0
 shader_parameter/LightingAsymmetry = 0.344
 shader_parameter/VolumeColor = Color(1, 1, 1, 1)
-shader_parameter/AmbientColor = Color(0.25, 0.25, 0.25, 1)
-shader_parameter/AmbientAbsorption = 2.0
-shader_parameter/LightColor = Color(2.162, 0.075, 0, 1)
-shader_parameter/LightAbsorption = 0.2
+shader_parameter/AmbientColor = Color(0.325441, 0.325441, 0.325441, 1)
+shader_parameter/AmbientAbsorption = 1.0
+shader_parameter/LightColor = Color(1.38824, 0.0745098, 0, 1)
+shader_parameter/LightAbsorption = 1.0
 shader_parameter/LightAttenuation = Vector3(1, 0.2, 0.2)
-shader_parameter/LightPosition = Vector3(4.68008, 2.57666, -8.11161)
+shader_parameter/LightPosition = Vector3(8.02546, 2.27975, 0.0190067)
 shader_parameter/NOISE_TEXTURE = ExtResource("2_bvl1u")
 
 [sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
@@ -51,7 +51,7 @@ transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -1.02591, 0, 7.83668)
 mesh = SubResource("SphereMesh_un46s")
 
 [node name="Light" type="Node3D" parent="." node_paths=PackedStringArray("cloud")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.68008, 2.57666, -8.11161)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.02546, 2.27975, 0.0190067)
 script = ExtResource("3_8r6c0")
 cloud = NodePath("../Cloud")
 
