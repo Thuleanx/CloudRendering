@@ -1,5 +1,5 @@
 @tool
-class_name PerlinWorleyNoise3D extends ImageTexture3D
+class_name PerlinNoise3D extends ImageTexture3D
 
 ## https://github.com/MAGGen-hub/Multi-Noise-Texture-Godot-Plugin/blob/master/addons/MultiNoiseTexture/MultiNoiseTexture3D.gd
 

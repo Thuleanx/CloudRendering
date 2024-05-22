@@ -72,7 +72,8 @@ float get_density(vec3 position, vec3 bound_center) {
 
 	float average_over_octaves = dot(sample, vec4(1.0) / 4.0);
 
-	return average_over_octaves;
+	// return average_over_octaves;
+    return sample.r;
 }
 
 float get_falloff(float distance_to_light) {

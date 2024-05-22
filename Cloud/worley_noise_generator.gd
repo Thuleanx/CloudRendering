@@ -98,7 +98,7 @@ func generate_noise_texture():
 					var sample_density = thread_data.density[octave]
 					var position = Vector3(i,j,k) / float(dimension_size)
 
-					var sample_coord : Vector3i = Vector3i(round(position * sample_density))
+					var sample_coord : Vector3i = Vector3i(floor(position * sample_density))
 
 					var bound_index = func(x:int):
 						if x < 0:

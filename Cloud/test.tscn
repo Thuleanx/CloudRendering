@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=3 uid="uid://c25hfbgat07wk"]
 
 [ext_resource type="Shader" path="res://cube_cloud.gdshader" id="1_0ck7e"]
-[ext_resource type="ImageTexture3D" uid="uid://dyt2la2wsriih" path="res://WorleyNoise.tres" id="2_bvl1u"]
+[ext_resource type="ImageTexture3D" uid="uid://lsuuqhntwqye" path="res://PerlinNoise.tres" id="2_m6q5j"]
 [ext_resource type="Script" path="res://light_supplier.gd" id="3_8r6c0"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_c2n7b"]
@@ -17,7 +17,7 @@ shader_parameter/LightColor = Color(1.38824, 0.0745098, 0, 1)
 shader_parameter/LightAbsorption = 1.0
 shader_parameter/LightAttenuation = Vector3(1, 0.2, 0.2)
 shader_parameter/LightPosition = Vector3(8.02546, 2.27975, 0.0190067)
-shader_parameter/NOISE_TEXTURE = ExtResource("2_bvl1u")
+shader_parameter/NOISE_TEXTURE = ExtResource("2_m6q5j")
 
 [sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
 material = SubResource("ShaderMaterial_c2n7b")
