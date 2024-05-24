@@ -3,26 +3,56 @@ render_mode unshaded, depth_test_disabled;
 
 uniform sampler2D DEPTH_TEXTURE : hint_depth_texture, filter_linear_mipmap;
 uniform sampler3D NOISE_TEXTURE : source_color, repeat_enable, filter_linear;
+uniform sampler2D CLOUD_TEXTURE : source_color, repeat_enable, filter_linear;
 
 uniform vec3 BOUND_SIZE = vec3(10);
 uniform float NoiseScale = 5.0;
+
+// Used for Henyey-Greenstein phase function
+// -1 is strong backwards propagation
+// 1 is strong forward propagation
 uniform float LightingAsymmetry : hint_range(-1.0, 1.0) = 1.0;
 
 uniform vec3 VolumeColor : source_color = vec3(1.0, 1.0, 1.0);
-
 uniform vec3 AmbientColor : source_color = vec3(0.0, 0.5, 0.5);
-uniform float AmbientAbsorption = 1.0;
-
 uniform vec3 LightColor : source_color = vec3(0.0, 0.5, 0.5);
-uniform float LightAbsorption = 1.0;
-uniform vec3 LightAttenuation = vec3(1.0, 1.0, 1.0);
-uniform vec3 LightPosition;
 
+uniform float AmbientAbsorption = 1.0;
+uniform float LightAbsorption = 1.0;
+
+uniform float CloudType : hint_range(0.0, 1.0) = 0.0;
+uniform float Coverage : hint_range(0.0, 1.0) = 0.0;
+
+uniform vec3 LightDirection;
 
 varying vec3 world_position;
 
-const int NUM_SAMPLES = 20;
+const int NUM_SAMPLES = 128;
 const int NUM_LIGHT_SAMPLES = 5;
+
+const vec3 STRATUS_GRADIENT = vec3(0.1, 0.2, 0.3);
+const vec3 STRATOCUMULUS_GRADIENT = vec3(0.4, 0.4, 0.6);
+const vec3 CUMULUS_GRADIENT = vec3(0.2, 0.6, 1.0);
+
+float remap(float t, float a, float b, float c, float d) { return c + (d - c) * (t - a) / (b - a); }
+float saturate(float t) { return clamp(t, 0.0, 1.0); }
+float evaluate_cloud(float height, vec3 gradient) { return remap(height, 0.0, gradient.x, 0.0, 1.0) * remap(height, gradient.y, gradient.z, 1.0, 0.0); }
+
+float get_density_multiplier_by_cloud_type(vec3 uv, float cloud_type) {
+    float stratus = 1.0 - saturate(cloud_type * 2.0);
+	float stratocumulus = 1.0f - abs(cloud_type - 0.5) * 2.0;
+	float cumulus = saturate(cloud_type - 0.5) * 2.0;
+
+    float stratus_value = evaluate_cloud(uv.y, STRATUS_GRADIENT);
+    float stratocumulus_value = evaluate_cloud(uv.y, STRATOCUMULUS_GRADIENT);
+    float cumulus_value = evaluate_cloud(uv.y, CUMULUS_GRADIENT);
+
+    float unbound_density_scale =   stratus_value * stratus + 
+                                    stratocumulus_value * stratocumulus +
+                                    cumulus_value * cumulus;
+
+    return saturate(unbound_density_scale);
+}
 
 float get_absorption(float density, float absorption_coef) { 
     // Beer's Law
@@ -30,6 +60,13 @@ float get_absorption(float density, float absorption_coef) {
     float powder_sugar = 1.0 - exp(-density * density * absorption_coef * absorption_coef);
 	
 	return beer;
+}
+
+
+float erode(float x, float e) {
+	return saturate(remap(x, e, 1.0, 0.0, 1.0));
+	//return x * e;
+    //return max(1.0 - (1.0 - x) / e, 0.0);
 }
 
 // Henyey-Greenstein anisotropic scattering
@@ -66,35 +103,33 @@ vec2 get_cube_penetration_distance(vec3 ray_origin, vec3 ray_direction, vec3 bou
 }
 
 float get_density(vec3 position, vec3 bound_center) {
-	vec3 uv = (position - bound_center) / vec3(NoiseScale);
+	vec3 uv = (position - bound_center) / vec3(NoiseScale) + 0.5;
 
-	vec4 sample = texture(NOISE_TEXTURE, uv);
+    float actual_cloud = texture(CLOUD_TEXTURE, uv.xz).r;
 
-	float average_over_octaves = dot(sample, vec4(1.0) / 4.0);
+	vec4 sample_perlinworley = texture(NOISE_TEXTURE, uv);
 
-	// return average_over_octaves;
-    return sample.r;
-}
+    vec3 model_uv = (position - bound_center) / BOUND_SIZE + 0.5;
+    float cloud_type_density_scale = get_density_multiplier_by_cloud_type(model_uv, CloudType);
 
-float get_falloff(float distance_to_light) {
-    vec3 dot_multiplier = vec3(1.0, distance_to_light, distance_to_light * distance_to_light);
-    return 1.0 / dot(LightAttenuation, dot_multiplier);
+    float low_frequency_fbm = dot(sample_perlinworley, vec4(0.0, 0.625, 0.25, 0.125));
+
+    float base_cloud = sample_perlinworley.r;
+    // base_cloud = saturate(remap(base_cloud, -(1.0 - low_frequency_fbm), 1.0, 0.0, 1.0));
+    base_cloud = erode(base_cloud, low_frequency_fbm);
+
+    return Coverage * base_cloud * cloud_type_density_scale * model_uv.y;
 }
 
 float get_light_absorption(vec3 position, vec3 bound_center, vec3 eye_direction) {
 	vec3 ray_origin = position;
-	vec3 ray_direction = LightPosition - position;
-    float distance_to_light = length(ray_direction);
-
-	if (dot(ray_direction, ray_direction) > 0.0) {
-		ray_direction = normalize(ray_direction);
-	}
-
+	vec3 ray_direction = LightDirection;
+	
     vec2 cube_penetration_distance = get_cube_penetration_distance(
         ray_origin, ray_direction, bound_center);
 
 	float enter_distance = max(cube_penetration_distance.x, 0.0); // should be 0.0
-	float exit_distance = min(max(cube_penetration_distance.y, 0.0), distance_to_light);
+	float exit_distance = max(cube_penetration_distance.y, 0.0);
 
 	float total_density = 0.0;
 	float total_distance = (exit_distance - enter_distance);
@@ -109,9 +144,7 @@ float get_light_absorption(vec3 position, vec3 bound_center, vec3 eye_direction)
 		total_density += segment_density * segment_length;
 	}
 
-    float falloff = get_falloff(distance_to_light);
-
-    float cosLightTheta = -dot(ray_direction, eye_direction);
+    float cosLightTheta = dot(ray_direction, eye_direction);
     float phase_function = get_phase_function(cosLightTheta);
 
 	return get_absorption(total_density, LightAbsorption) * phase_function;

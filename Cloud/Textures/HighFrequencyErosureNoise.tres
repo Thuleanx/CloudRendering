@@ -1,0 +1,51 @@
+[gd_resource type="ImageTexture3D" script_class="PerlinWorleyNoise3D" load_steps=6 format=3 uid="uid://bnncunjdwynnx"]
+
+[ext_resource type="Script" path="res://perlin_worley_noise_generator.gd" id="1_vk2eu"]
+
+[sub_resource type="Image" id="Image_sj4xf"]
+data = {
+"data": PackedByteArray(255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255),
+"format": "RGBA8",
+"height": 4,
+"mipmaps": false,
+"width": 4
+}
+
+[sub_resource type="Image" id="Image_stpoa"]
+data = {
+"data": PackedByteArray(255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255),
+"format": "RGBA8",
+"height": 4,
+"mipmaps": false,
+"width": 4
+}
+
+[sub_resource type="Image" id="Image_0e3ui"]
+data = {
+"data": PackedByteArray(255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255),
+"format": "RGBA8",
+"height": 4,
+"mipmaps": false,
+"width": 4
+}
+
+[sub_resource type="Image" id="Image_lkhoj"]
+data = {
+"data": PackedByteArray(255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255),
+"format": "RGBA8",
+"height": 4,
+"mipmaps": false,
+"width": 4
+}
+
+[resource]
+_images = Array[Image]([SubResource("Image_sj4xf"), SubResource("Image_stpoa"), SubResource("Image_0e3ui"), SubResource("Image_lkhoj")])
+script = ExtResource("1_vk2eu")
+dimension = 16
+worley_density = Array[int]([16, 32, 56])
+worley_noise_contribution = Array[float]([0.625, 0.25, 0.125])
+worley_density_extras = Array[int]([8, 16, 32, 64])
+g_worley_contribution = Array[float]([0.625, 0.25, 0.125, 0.0])
+b_worley_contribution = Array[float]([0.0, 0.625, 0.25, 0.125])
+a_worley_contribution = Array[float]([0.0, 0.0, 0.75, 0.25])
+regenerate_button = false

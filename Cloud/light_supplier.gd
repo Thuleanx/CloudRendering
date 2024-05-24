@@ -9,4 +9,4 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	cloud.mesh.material.set("shader_parameter/LightPosition", global_position)
+	cloud.mesh.material.set("shader_parameter/LightDirection", global_transform * Vector3.RIGHT)

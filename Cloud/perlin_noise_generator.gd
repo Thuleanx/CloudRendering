@@ -124,7 +124,7 @@ func generate_noise_texture():
 
 					var sample_coord : Vector3i = Vector3i(floor(position * sample_density))
 					var sample_coord_fractional : Vector3 = position * sample_density - Vector3(sample_coord)
-
+					
 					var bound_index = func(x:int):
 						if x < 0:
 							return x + sample_density
