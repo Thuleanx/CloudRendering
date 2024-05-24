@@ -1,25 +1,29 @@
-[gd_scene load_steps=11 format=3 uid="uid://c25hfbgat07wk"]
+[gd_scene load_steps=12 format=3 uid="uid://c25hfbgat07wk"]
 
 [ext_resource type="Shader" path="res://cube_cloud.gdshader" id="1_0ck7e"]
 [ext_resource type="Texture2D" uid="uid://dgkwisjp0idce" path="res://Textures/CloudNoise.png" id="2_ip244"]
 [ext_resource type="Script" path="res://light_supplier.gd" id="3_8r6c0"]
+[ext_resource type="ImageTexture3D" uid="uid://bnncunjdwynnx" path="res://Textures/HighFrequencyErosureNoise.tres" id="3_cex17"]
 [ext_resource type="ImageTexture3D" uid="uid://c1sja4j837r2y" path="res://Textures/PerlinWorleyNoise.tres" id="3_hewjb"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_c2n7b"]
 render_priority = 0
 shader = ExtResource("1_0ck7e")
 shader_parameter/BOUND_SIZE = Vector3(100, 20, 100)
-shader_parameter/NoiseScale = 40.0
+shader_parameter/NoiseScale = 80.0
 shader_parameter/LightingAsymmetry = 0.179
-shader_parameter/VolumeColor = Color(1, 1, 1, 1)
-shader_parameter/AmbientColor = Color(0.0834913, 0.12356, 0.126919, 1)
-shader_parameter/LightColor = Color(0.696329, 0.681193, 0.703683, 1)
-shader_parameter/AmbientAbsorption = 2.0
+shader_parameter/VolumeColor = Color(0.907942, 0.907942, 0.907942, 1)
+shader_parameter/AmbientColor = Color(0.0556152, 0.0877225, 0.0904147, 1)
+shader_parameter/LightColor = Color(0.964484, 0.747784, 0.736167, 1)
+shader_parameter/AmbientAbsorption = 3.0
 shader_parameter/LightAbsorption = 1.0
-shader_parameter/CloudType = 0.705
-shader_parameter/Coverage = 0.522
+shader_parameter/CloudType = 0.458
+shader_parameter/Coverage = 1.0
+shader_parameter/HighFrequencyNoiseScale = 3.689
+shader_parameter/HighFrequencyNoiseScaleErosure = 0.204
 shader_parameter/LightDirection = Vector3(-4.37114e-08, -1, 0)
 shader_parameter/NOISE_TEXTURE = ExtResource("3_hewjb")
+shader_parameter/HIGH_FREQUENCY_NOISE_TEXTURE = ExtResource("3_cex17")
 shader_parameter/CLOUD_TEXTURE = ExtResource("2_ip244")
 
 [sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
@@ -41,7 +45,7 @@ glow_bloom = 0.47
 [node name="Root" type="Node3D"]
 
 [node name="Cloud" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.999981, -0.00180039, -0.00590687, 0.00184114, 0.999974, 0.00690518, 0.0058943, -0.00691591, 0.999959, 7.01124, 25.7345, -2.71087)
+transform = Transform3D(0.999981, -0.00180039, -0.00590687, 0.00184114, 0.999974, 0.00690518, 0.0058943, -0.00691592, 0.999959, 7.01124, 25.7345, -2.71087)
 mesh = SubResource("BoxMesh_ivrmn")
 
 [node name="Plane" type="MeshInstance3D" parent="."]

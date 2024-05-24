@@ -3,6 +3,8 @@ render_mode unshaded, depth_test_disabled;
 
 uniform sampler2D DEPTH_TEXTURE : hint_depth_texture, filter_linear_mipmap;
 uniform sampler3D NOISE_TEXTURE : source_color, repeat_enable, filter_linear;
+uniform sampler3D HIGH_FREQUENCY_NOISE_TEXTURE: source_color, repeat_enable, filter_linear;
+
 uniform sampler2D CLOUD_TEXTURE : source_color, repeat_enable, filter_linear;
 
 uniform vec3 BOUND_SIZE = vec3(10);
@@ -22,6 +24,8 @@ uniform float LightAbsorption = 1.0;
 
 uniform float CloudType : hint_range(0.0, 1.0) = 0.0;
 uniform float Coverage : hint_range(0.0, 1.0) = 0.0;
+uniform float HighFrequencyNoiseScale : hint_range(1.0, 10.0) = 1.0;
+uniform float HighFrequencyNoiseScaleErosure : hint_range(0.0, 1.0) = 0.2;
 
 uniform vec3 LightDirection;
 
@@ -107,7 +111,7 @@ float get_density(vec3 position, vec3 bound_center) {
 
     float actual_cloud = texture(CLOUD_TEXTURE, uv.xz).r;
 
-	vec4 sample_perlinworley = texture(NOISE_TEXTURE, uv);
+	vec4 sample_perlinworley = texture(NOISE_TEXTURE, uv + TIME * vec3(1.0, 0.0, 1.0) * 0.01);
 
     vec3 model_uv = (position - bound_center) / BOUND_SIZE + 0.5;
     float cloud_type_density_scale = get_density_multiplier_by_cloud_type(model_uv, CloudType);
@@ -115,10 +119,19 @@ float get_density(vec3 position, vec3 bound_center) {
     float low_frequency_fbm = dot(sample_perlinworley, vec4(0.0, 0.625, 0.25, 0.125));
 
     float base_cloud = sample_perlinworley.r;
-    // base_cloud = saturate(remap(base_cloud, -(1.0 - low_frequency_fbm), 1.0, 0.0, 1.0));
     base_cloud = erode(base_cloud, low_frequency_fbm);
 
-    return Coverage * base_cloud * cloud_type_density_scale * model_uv.y;
+    vec4 sample_highfrequency = texture(HIGH_FREQUENCY_NOISE_TEXTURE, uv * HighFrequencyNoiseScale + TIME * vec3(1.0, 0.0, 1.0) * -0.1);
+    float high_frequency_fbm = dot(sample_highfrequency, vec4(0.0, .625, 0.25, 0.125));
+
+    base_cloud = erode(base_cloud, high_frequency_fbm * HighFrequencyNoiseScaleErosure);
+
+    // density of clouds increase with height
+    base_cloud *= cloud_type_density_scale * model_uv.y;
+
+    float cloud_with_coverage = base_cloud * Coverage;
+
+    return cloud_with_coverage;
 }
 
 float get_light_absorption(vec3 position, vec3 bound_center, vec3 eye_direction) {
