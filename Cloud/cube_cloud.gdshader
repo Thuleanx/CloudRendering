@@ -23,9 +23,13 @@ uniform float AmbientAbsorption = 1.0;
 uniform float LightAbsorption = 1.0;
 
 uniform float CloudType : hint_range(0.0, 1.0) = 0.0;
-uniform float Coverage : hint_range(0.0, 1.0) = 0.0;
+uniform float GlobalCoverage : hint_range(0.0, 1.0) = 0.0;
 uniform float HighFrequencyNoiseScale : hint_range(1.0, 10.0) = 1.0;
 uniform float HighFrequencyNoiseScaleErosure : hint_range(0.0, 1.0) = 0.2;
+
+uniform vec3 WindVelocity = vec3(0.0, 0.0, 0.0);
+uniform float WindHeightSkew : hint_range(0.0, 10.0) = 0.0;
+uniform float AnvilBias : hint_range(0.0, 1.0) = 0.0;
 
 uniform vec3 LightDirection;
 
@@ -106,14 +110,19 @@ vec2 get_cube_penetration_distance(vec3 ray_origin, vec3 ray_direction, vec3 bou
 	return vec2(entry_time, exit_time);
 }
 
+
 float get_density(vec3 position, vec3 bound_center) {
 	vec3 uv = (position - bound_center) / vec3(NoiseScale) + 0.5;
+    vec3 model_uv = (position - bound_center) / BOUND_SIZE + 0.5;
+    float height_fraction = model_uv.y;
+
+    vec3 wind_uv_displacement = WindVelocity * TIME;
+    wind_uv_displacement += height_fraction * WindVelocity * WindHeightSkew;
 
     float actual_cloud = texture(CLOUD_TEXTURE, uv.xz).r;
 
-	vec4 sample_perlinworley = texture(NOISE_TEXTURE, uv + TIME * vec3(1.0, 0.0, 1.0) * 0.01);
+	vec4 sample_perlinworley = texture(NOISE_TEXTURE, uv + wind_uv_displacement);
 
-    vec3 model_uv = (position - bound_center) / BOUND_SIZE + 0.5;
     float cloud_type_density_scale = get_density_multiplier_by_cloud_type(model_uv, CloudType);
 
     float low_frequency_fbm = dot(sample_perlinworley, vec4(0.0, 0.625, 0.25, 0.125));
@@ -121,15 +130,20 @@ float get_density(vec3 position, vec3 bound_center) {
     float base_cloud = sample_perlinworley.r;
     base_cloud = erode(base_cloud, low_frequency_fbm);
 
-    vec4 sample_highfrequency = texture(HIGH_FREQUENCY_NOISE_TEXTURE, uv * HighFrequencyNoiseScale + TIME * vec3(1.0, 0.0, 1.0) * -0.1);
+    vec4 sample_highfrequency = texture(HIGH_FREQUENCY_NOISE_TEXTURE, uv * HighFrequencyNoiseScale - wind_uv_displacement);
     float high_frequency_fbm = dot(sample_highfrequency, vec4(0.0, .625, 0.25, 0.125));
 
     base_cloud = erode(base_cloud, high_frequency_fbm * HighFrequencyNoiseScaleErosure);
+    base_cloud *= cloud_type_density_scale;
 
-    // density of clouds increase with height
-    base_cloud *= cloud_type_density_scale * model_uv.y;
+    float anvil_pow = remap(height_fraction, 0.7, 0.8, 1.0, mix(1.0, 0.5, AnvilBias));
+    float local_coverage = pow(GlobalCoverage, anvil_pow);
 
-    float cloud_with_coverage = base_cloud * Coverage;
+    float coverage_erosure = (1.0 - local_coverage) / 3.0;
+    //float coverage_erosure = (1.0 - local_coverage) * (1.0 - local_coverage) / 3.0;
+    float cloud_with_coverage = saturate(erode(base_cloud, coverage_erosure));
+    cloud_with_coverage *= local_coverage;
+    //cloud_with_coverage *= local_coverage * local_coverage * local_coverage;
 
     return cloud_with_coverage;
 }
