@@ -1,0 +1,72 @@
+[gd_scene load_steps=12 format=3 uid="uid://c25hfbgat07wk"]
+
+[ext_resource type="Shader" path="res://cube_cloud.gdshader" id="1_0ck7e"]
+[ext_resource type="Texture2D" uid="uid://dgkwisjp0idce" path="res://Textures/CloudNoise.png" id="2_ip244"]
+[ext_resource type="Script" path="res://light_supplier.gd" id="3_8r6c0"]
+[ext_resource type="ImageTexture3D" uid="uid://bnncunjdwynnx" path="res://Textures/HighFrequencyErosureNoise.tres" id="3_cex17"]
+[ext_resource type="ImageTexture3D" uid="uid://c1sja4j837r2y" path="res://Textures/PerlinWorleyNoise.tres" id="3_hewjb"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_c2n7b"]
+render_priority = 0
+shader = ExtResource("1_0ck7e")
+shader_parameter/BOUND_SIZE = Vector3(400, 100, 400)
+shader_parameter/NoiseScale = Vector3(240, 240, 240)
+shader_parameter/LightingAsymmetry = 0.214
+shader_parameter/VolumeColor = Color(0.907942, 0.907942, 0.907942, 1)
+shader_parameter/AmbientColor = Color(0.0556152, 0.0877225, 0.0904147, 1)
+shader_parameter/LightColor = Color(0.721698, 0.559553, 0.78459, 1)
+shader_parameter/AmbientAbsorption = 1.0
+shader_parameter/LightAbsorption = 1.0
+shader_parameter/CloudType = 1.0
+shader_parameter/GlobalCoverage = 1.0
+shader_parameter/HighFrequencyNoiseScale = 10.0
+shader_parameter/HighFrequencyNoiseScaleErosure = 0.376
+shader_parameter/WindVelocity = Vector3(0, 0, 0.01)
+shader_parameter/WindHeightSkew = 5.907
+shader_parameter/AnvilBias = 0.0
+shader_parameter/LightDirection = Vector3(0.397982, 0.905727, 0.145841)
+shader_parameter/NOISE_TEXTURE = ExtResource("3_hewjb")
+shader_parameter/HIGH_FREQUENCY_NOISE_TEXTURE = ExtResource("3_cex17")
+shader_parameter/CLOUD_TEXTURE = ExtResource("2_ip244")
+
+[sub_resource type="BoxMesh" id="BoxMesh_ivrmn"]
+material = SubResource("ShaderMaterial_c2n7b")
+flip_faces = true
+size = Vector3(400, 100, 400)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yhxxs"]
+albedo_color = Color(0.0637368, 0.178372, 0.271505, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_25f5b"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_un46s"]
+
+[sub_resource type="Environment" id="Environment_pumh3"]
+glow_enabled = true
+glow_bloom = 0.47
+glow_hdr_scale = 2.27
+
+[node name="Root" type="Node3D"]
+
+[node name="Cloud" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.999981, -0.00180039, -0.00590687, 0.00184114, 0.999974, 0.00690518, 0.0058943, -0.00691592, 0.999959, 0, 100, 0)
+mesh = SubResource("BoxMesh_ivrmn")
+
+[node name="Plane" type="MeshInstance3D" parent="."]
+transform = Transform3D(20, 0, 0, 0, 20, 0, 0, 0, 20, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_yhxxs")
+mesh = SubResource("PlaneMesh_25f5b")
+
+[node name="Sphere" type="MeshInstance3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -1.02591, 0, 7.83668)
+visible = false
+mesh = SubResource("SphereMesh_un46s")
+
+[node name="Light" type="Node3D" parent="." node_paths=PackedStringArray("cloud")]
+transform = Transform3D(0.915516, 0.397982, -0.0586695, -0.402284, 0.905727, -0.13352, 3.72529e-09, 0.145841, 0.989308, 0, 0, 0)
+script = ExtResource("3_8r6c0")
+cloud = NodePath("../Cloud")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+environment = SubResource("Environment_pumh3")

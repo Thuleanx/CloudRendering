@@ -8,12 +8,12 @@ uniform sampler3D HIGH_FREQUENCY_NOISE_TEXTURE: source_color, repeat_enable, fil
 uniform sampler2D CLOUD_TEXTURE : source_color, repeat_enable, filter_linear;
 
 uniform vec3 BOUND_SIZE = vec3(10);
-uniform float NoiseScale = 5.0;
+uniform vec3 NoiseScale = vec3(5.0);
 
 // Used for Henyey-Greenstein phase function
 // -1 is strong backwards propagation
 // 1 is strong forward propagation
-uniform float LightingAsymmetry : hint_range(-1.0, 1.0) = 1.0;
+uniform float LightingAsymmetry : hint_range(-1.0, 1.0) = 0.0;
 
 uniform vec3 VolumeColor : source_color = vec3(1.0, 1.0, 1.0);
 uniform vec3 AmbientColor : source_color = vec3(0.0, 0.5, 0.5);
@@ -36,7 +36,7 @@ uniform vec3 LightDirection;
 varying vec3 world_position;
 
 const int NUM_SAMPLES = 128;
-const int NUM_LIGHT_SAMPLES = 5;
+const int NUM_LIGHT_SAMPLES = 16;
 
 const vec3 STRATUS_GRADIENT = vec3(0.1, 0.2, 0.3);
 const vec3 STRATOCUMULUS_GRADIENT = vec3(0.4, 0.4, 0.6);
@@ -65,11 +65,19 @@ float get_density_multiplier_by_cloud_type(vec3 uv, float cloud_type) {
 float get_absorption(float density, float absorption_coef) { 
     // Beer's Law
     float beer = exp(-density * absorption_coef); 
-    float powder_sugar = 1.0 - exp(-density * density * absorption_coef * absorption_coef);
+    float powder_sugar = 1.0 - exp(-2.0 * density * absorption_coef);
 	
 	return beer;
 }
 
+float get_radiance_absorption(float density, float absorption_coef) { 
+    // Beer's Law
+    float beer = exp(-density * absorption_coef); 
+	float beer_scaled = exp(-density * absorption_coef * 0.25) * 0.7;
+    float powder_sugar = 1.0 - exp(-2.0 * density * absorption_coef);
+	
+	return max(beer, beer_scaled);
+}
 
 float erode(float x, float e) {
 	return saturate(remap(x, e, 1.0, 0.0, 1.0));
@@ -110,18 +118,17 @@ vec2 get_cube_penetration_distance(vec3 ray_origin, vec3 ray_direction, vec3 bou
 	return vec2(entry_time, exit_time);
 }
 
-
 float get_density(vec3 position, vec3 bound_center) {
-	vec3 uv = (position - bound_center) / vec3(NoiseScale) + 0.5;
+	vec3 uv = (position - bound_center) / NoiseScale + 0.5;
     vec3 model_uv = (position - bound_center) / BOUND_SIZE + 0.5;
     float height_fraction = model_uv.y;
 
     vec3 wind_uv_displacement = WindVelocity * TIME;
     wind_uv_displacement += height_fraction * WindVelocity * WindHeightSkew;
 
-    float actual_cloud = texture(CLOUD_TEXTURE, uv.xz).r;
+    float actual_cloud = texture(CLOUD_TEXTURE, uv.xy).r;
 
-	vec4 sample_perlinworley = texture(NOISE_TEXTURE, uv + wind_uv_displacement);
+	vec4 sample_perlinworley = texture(NOISE_TEXTURE, (uv + wind_uv_displacement).xzy);
 
     float cloud_type_density_scale = get_density_multiplier_by_cloud_type(model_uv, CloudType);
 
@@ -130,7 +137,7 @@ float get_density(vec3 position, vec3 bound_center) {
     float base_cloud = sample_perlinworley.r;
     base_cloud = erode(base_cloud, low_frequency_fbm);
 
-    vec4 sample_highfrequency = texture(HIGH_FREQUENCY_NOISE_TEXTURE, uv * HighFrequencyNoiseScale - wind_uv_displacement);
+    vec4 sample_highfrequency = texture(HIGH_FREQUENCY_NOISE_TEXTURE, (uv * HighFrequencyNoiseScale).xzy);
     float high_frequency_fbm = dot(sample_highfrequency, vec4(0.0, .625, 0.25, 0.125));
 
     base_cloud = erode(base_cloud, high_frequency_fbm * HighFrequencyNoiseScaleErosure);
@@ -145,12 +152,13 @@ float get_density(vec3 position, vec3 bound_center) {
     cloud_with_coverage *= local_coverage;
     //cloud_with_coverage *= local_coverage * local_coverage * local_coverage;
 
+	//return actual_cloud;
     return cloud_with_coverage;
 }
 
 float get_light_absorption(vec3 position, vec3 bound_center, vec3 eye_direction) {
 	vec3 ray_origin = position;
-	vec3 ray_direction = LightDirection;
+	vec3 ray_direction = -LightDirection;
 	
     vec2 cube_penetration_distance = get_cube_penetration_distance(
         ray_origin, ray_direction, bound_center);
@@ -174,7 +182,7 @@ float get_light_absorption(vec3 position, vec3 bound_center, vec3 eye_direction)
     float cosLightTheta = dot(ray_direction, eye_direction);
     float phase_function = get_phase_function(cosLightTheta);
 
-	return get_absorption(total_density, LightAbsorption) * phase_function;
+	return get_radiance_absorption(total_density, LightAbsorption) * phase_function;
 }
 
 void vertex() {
@@ -217,8 +225,8 @@ void fragment() {
 
 		float segment_absorption = previous_absorption - volume_absorption_from_march;
         
-		volumetricLightColor += VolumeColor * LightColor * previous_absorption * light_absorption 
-              * segment_length;
+		volumetricLightColor += VolumeColor * LightColor * previous_absorption
+			* light_absorption * segment_length;
 		volumetricLightColor += VolumeColor * AmbientColor * segment_absorption;
 	}
 
